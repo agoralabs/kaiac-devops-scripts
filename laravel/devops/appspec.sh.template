@@ -1,0 +1,39 @@
+#!/bin/bash
+
+SCRIPT_MODE="$TF_VAR_ENV_APP_GL_SCRIPT_MODE"
+
+if [ "$SCRIPT_MODE" == "CLOUDOCKER" ]
+then
+
+    mkdir -p $TF_VAR_ENV_APP_BE_LOCAL_SOURCE_FOLDER/tmp
+
+    cd /var/www/html/$TF_VAR_ENV_APP_GL_NAME
+
+    aws ecr get-login-password --region $TF_VAR_ENV_APP_GL_AWS_REGION | docker login --username AWS --password-stdin $TF_VAR_ENV_APP_GL_AWS_ACCOUNT_ID.dkr.ecr.$TF_VAR_ENV_APP_GL_AWS_REGION.amazonaws.com
+
+    docker build -t $TF_VAR_ENV_APP_GL_NAME:$TF_VAR_ENV_APP_BE_NAMESPACE'_'$TF_VAR_ENV_APP_GL_NAME .
+
+    docker compose -f ./docker-compose.yml up -d
+
+else
+
+    COMPOSER_ALLOW_SUPERUSER=1
+    cd /var/www/html/$TF_VAR_ENV_APP_GL_NAME
+    sudo composer update --no-interaction
+    sudo composer install --no-interaction
+    sudo npm install
+    sudo chmod 777 -R storage/
+    sudo chmod 777 -R bootstrap/
+    sudo chmod 777 -R vendor/
+    sudo php artisan key:generate
+
+    sudo cp 000-default.conf /etc/apache2/sites-available/000-default.conf
+    sudo cp dir.conf /etc/apache2/mods-enabled/dir.conf
+    sudo cp apache2.conf /etc/apache2/apache2.conf
+    sudo cp ports.conf /etc/apache2/ports.conf
+    sudo cp php.ini /etc/php/8.1/apache2/php.ini
+    sudo systemctl restart apache2
+
+fi
+
+

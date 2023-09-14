@@ -1,0 +1,57 @@
+FROM $TF_VAR_ENV_APP_GL_AWS_ACCOUNT_ID.dkr.ecr.$TF_VAR_ENV_APP_GL_AWS_REGION_ECR.amazonaws.com/$TF_VAR_ENV_APP_GL_REPO_PHP_NAME:$TF_VAR_ENV_APP_GL_REPO_PHP_TAG
+
+USER root
+
+# Set working directory
+WORKDIR /var/www/html/$TF_VAR_ENV_APP_GL_NAME
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    zip \
+    unzip \
+    ruby-full \
+    wget \
+    unzip \
+    software-properties-common \
+    curl
+
+RUN docker-php-ext-install mysqli pdo pdo_mysql
+
+# Install nodejs 16
+RUN curl -s https://deb.nodesource.com/setup_16.x | bash
+
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y nodejs \
+    npm 
+
+# Enable mod rewrite
+RUN a2enmod rewrite
+
+# Install composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copy code to /var/www/html/$TF_VAR_ENV_APP_GL_NAME
+COPY . /var/www/html/$TF_VAR_ENV_APP_GL_NAME
+
+
+# Copy apache/php configs
+RUN cp ./000-default.conf /etc/apache2/sites-available/000-default.conf ; \
+    cp ./dir.conf /etc/apache2/mods-enabled/dir.conf ; \
+    cp ./apache2.conf /etc/apache2/apache2.conf ; \
+    cp ./ports.conf /etc/apache2/ports.conf
+#RUN cp ./php.ini /etc/php/8.1/apache2/php.ini
+
+RUN echo "ServerName www.kaiac.com" >> /etc/apache2/apache2.conf
+
+# Deployment steps
+RUN composer install --optimize-autoloader --no-dev
+RUN npm install
+
+RUN chmod 777 -R vendor \
+    storage \
+    bootstrap
+
+RUN php artisan key:generate
+
+
+EXPOSE $TF_VAR_ENV_APP_BE_LOCAL_PORT

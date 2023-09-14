@@ -1,0 +1,10 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /var/www/html/$TF_VAR_ENV_APP_GL_NAME
+hooks:
+  AfterInstall:
+    - location: devops/appspec.sh
+      timeout: 1000
+      runas: root
