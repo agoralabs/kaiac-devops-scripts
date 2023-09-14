@@ -1,0 +1,10 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: $TF_VAR_ENV_APP_BE_LOCAL_SOURCE_FOLDER
+hooks:
+  AfterInstall:
+    - location: devops/appspec.sh
+      timeout: 1000
+      runas: root

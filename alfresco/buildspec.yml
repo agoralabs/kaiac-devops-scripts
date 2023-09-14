@@ -1,0 +1,16 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+  build:
+    commands:
+      - git clone git@github.com:agoralabs/kaiac-devops-scripts.git
+      - rm -rf devops/*
+      - cp -r ./kaiac-devops-scripts/alfresco/devops/. ./devops
+      - chmod +x ./devops/buildspec.sh
+      - ./devops/buildspec.sh
+artifacts:
+  files:
+    - '**/*'

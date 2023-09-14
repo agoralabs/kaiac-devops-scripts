@@ -1,0 +1,17 @@
+#!/bin/bash
+
+SCRIPT_MODE="$TF_VAR_ENV_APP_GL_SCRIPT_MODE"
+
+source_folder=$TF_VAR_ENV_APP_BE_LOCAL_SOURCE_FOLDER
+
+if [ "$SCRIPT_MODE" == "CLOUDOCKER" ]
+then
+
+    docker ps -a | grep -v CONTAINER | awk '{ print $1 }' | xargs docker stop
+    docker ps -a | grep -v CONTAINER | awk '{ print $1 }' | xargs docker rm
+
+    aws ecr get-login-password --region $TF_VAR_ENV_APP_GL_AWS_REGION_ECR | docker login --username AWS --password-stdin $TF_VAR_ENV_APP_GL_AWS_ACCOUNT_ID.dkr.ecr.$TF_VAR_ENV_APP_GL_AWS_REGION_ECR.amazonaws.com
+
+    docker compose -f $source_folder/docker-compose.yml up -d
+
+fi
