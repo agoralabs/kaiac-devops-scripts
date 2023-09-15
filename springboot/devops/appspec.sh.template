@@ -1,0 +1,35 @@
+#!/bin/bash
+
+SCRIPT_MODE="$TF_VAR_ENV_APP_GL_SCRIPT_MODE"
+
+source_folder=$TF_VAR_ENV_APP_BE_LOCAL_SOURCE_FOLDER
+
+if [ "$SCRIPT_MODE" == "CLOUDOCKER" ]
+then
+
+    mkdir -p $TF_VAR_ENV_APP_BE_LOCAL_SOURCE_FOLDER/tmp
+
+    aws ecr get-login-password --region $TF_VAR_ENV_APP_GL_AWS_REGION_ECR | docker login --username AWS --password-stdin $TF_VAR_ENV_APP_GL_AWS_ACCOUNT_ID.dkr.ecr.$TF_VAR_ENV_APP_GL_AWS_REGION_ECR.amazonaws.com
+
+    docker build -t $TF_VAR_ENV_APP_GL_NAME:${TF_VAR_ENV_APP_BE_NAMESPACE}_${TF_VAR_ENV_APP_GL_NAME} $source_folder
+
+    docker compose -f $source_folder/docker-compose.yml up -d
+
+else
+
+    sudo systemctl stop apache2
+
+    PID=$(ps -ef | grep java | grep -v grep | awk '{ print $2 }')
+    if [ -z "$PID" ]
+    then
+        echo Application is already stopped
+    else
+        echo kill $PID
+        kill $PID
+    fi
+
+    mvnw_file=$source_folder/mvnw
+    chmod +x $mvnw_file
+    nohup $mvnw_file clean spring-boot:run -f $source_folder/pom.xml >/dev/null 2>&1 &
+
+fi

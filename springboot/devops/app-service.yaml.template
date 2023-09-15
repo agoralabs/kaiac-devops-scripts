@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}-service
+  annotations:
+    # creating dns record
+    external-dns.alpha.kubernetes.io/hostname: ${TF_VAR_ENV_APP_BE_DOMAIN_NAME}
+    # Note that the backend talks over HTTP.
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    # TODO: Fill in with the ARN of your certificate.
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ${TF_VAR_ENV_APP_BE_SSL_CERT_ARN}
+    # Only run SSL on the port named "https" below.
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: https
+spec:
+  selector:
+    app: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}
+  ports:
+  - name: http
+    port: 80
+  - name: https
+    port: 443
+    targetPort: 80
+  type: LoadBalancer

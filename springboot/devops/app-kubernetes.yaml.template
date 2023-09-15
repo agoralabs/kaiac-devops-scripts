@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}
+  labels:
+    app: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}
+    spec:
+      containers:
+      - name: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}-app
+        image: ${TF_VAR_ENV_APP_GL_AWS_ACCOUNT_ID}.dkr.ecr.${TF_VAR_ENV_APP_GL_AWS_REGION_ECR}.amazonaws.com/${TF_VAR_ENV_APP_GL_NAME}:${TF_VAR_ENV_APP_BE_NAMESPACE}_${TF_VAR_ENV_APP_GL_NAME}
+        ports:
+        - containerPort: 80 
+        env:
+        - name: DB_HOST
+          value: localhost
+        - name: DB_DATABASE
+          value: laravel_aws_eks
+        - name: DB_USERNAME
+          value: app 
+        - name: DB_PASSWORD
+          value: password

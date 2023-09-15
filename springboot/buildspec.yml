@@ -1,0 +1,16 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+  build:
+    commands:
+      - git clone $TF_VAR_ENV_GLO_DEVOPS_SCRIPTS_GIT_REPO kaiac-devops-scripts
+      - mkdir devops
+      - cp -r ./kaiac-devops-scripts/$TF_VAR_ENV_APP_GL_DEVOPS_TECHOLOGY/devops/. ./devops
+      - chmod +x ./devops/buildspec.sh
+      - ./devops/buildspec.sh
+artifacts:
+  files:
+    - '**/*'

@@ -1,0 +1,43 @@
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/certificate-arn: ${TF_VAR_ENV_APP_BE_SSL_CERT_ARN}
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+spec:
+  ingressClassName: alb
+  rules:
+    - host: ${TF_VAR_ENV_APP_BE_DOMAIN_NAME}
+      http:
+        paths:
+         - path: /
+           pathType: Prefix
+           backend:
+             service:
+               name: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}-service
+               port:
+                 number: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}-service
+  annotations:
+    # creating dns record
+    external-dns.alpha.kubernetes.io/hostname: ${TF_VAR_ENV_APP_BE_DOMAIN_NAME}
+    # Note that the backend talks over HTTP.
+  labels:
+    app: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}
+spec:
+  selector:
+    app: ${TF_VAR_ENV_APP_BE_NAMESPACE}-${TF_VAR_ENV_APP_GL_NAME}
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  type: NodePort

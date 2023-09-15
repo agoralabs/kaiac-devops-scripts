@@ -1,0 +1,5 @@
+FROM $TF_VAR_ENV_APP_GL_AWS_ACCOUNT_ID.dkr.ecr.$TF_VAR_ENV_APP_GL_AWS_REGION_ECR.amazonaws.com/$TF_VAR_ENV_APP_GL_REPO_JDK_NAME:$TF_VAR_ENV_APP_GL_REPO_JDK_TAG
+
+COPY target/demo-kaiac-0.0.1-SNAPSHOT.jar demo-kaiac-0.0.1-SNAPSHOT.jar
+
+ENTRYPOINT ["java","-jar","/demo-kaiac-0.0.1-SNAPSHOT.jar"]

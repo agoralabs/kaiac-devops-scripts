@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    driverClassName: "com.mysql.cj.jdbc.Driver"
+    url: "jdbc:mysql://$TF_VAR_ENV_APP_DB_HOST:$TF_VAR_ENV_APP_DB_PORT/$TF_VAR_ENV_APP_DB_NAME"
+    username: "$TF_VAR_ENV_APP_DB_USERNAME"
+    password: "$TF_VAR_ENV_APP_DB_PASSWORD"
+    continueOnError: true
+    initialize: false
+    initialSize: 0
+    timeBetweenEvictionRunsMillis: 5000
+    minEvictableIdleTimeMillis: 5000
+    minIdle: 0
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+#      naming_strategy: org.hibernate.cfg.DefaultNamingStrategy
+    properties:
+      hibernate:   
+        dialect: org.hibernate.dialect.MySQLDialect
+        hbm2ddl:
+          auto: none
+        temp:
+          use_jdbc_metadata_defaults: false
+
+server:
+  port : 8081
+
+
+springdoc:
+  api-docs:
+    path: /api-docs # Specify the path of the OpenAPI documentation
+  swagger-ui:
+    path: /swagger-ui.html # Specify the path of the Swagger UI
+    enabled: true # Enable or disable Swagger UI
+  show-actuator: true # Include spring-boot-actuator endpoints to swagger-ui
+  swagger-ui.use-root-path: false
+
+demo:
+  kaiac:
+    openapi:
+      app-url: $TF_VAR_ENV_APP_BE_URL
